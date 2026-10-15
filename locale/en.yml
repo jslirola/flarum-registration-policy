@@ -1,0 +1,15 @@
+jslirola-registration-policy:
+  admin:
+    settings:
+      skip_login_unconfirmed_label: Do not sign new members in until they confirm their email
+      skip_login_unconfirmed_help: Core signs every registrant in straight away. With this on, they sign in when they click the link in the confirmation email.
+      block_token_unconfirmed_label: Refuse sign-in while the email is unconfirmed
+      block_token_unconfirmed_help: A correct password is refused (log in form, POST /api/token, SSO clients) until the account's email address is confirmed. A wrong password gets the usual answer.
+      override_sso_activation_label: Require confirmation even with maicol07/flarum-ext-sso
+      override_sso_activation_help: That extension confirms every new account automatically. With this on, accounts created through the forum's sign-up form must still confirm their email; accounts created by the SSO client keep their automatic confirmation. Has no effect when that extension is disabled.
+
+  forum:
+    sign_up:
+      confirmation_title: Check your email
+      confirmation_text: "Your account has been created. We have sent a confirmation link to {email}: open it to sign in."
+      close_button: Close

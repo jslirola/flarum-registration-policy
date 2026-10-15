@@ -1,0 +1,67 @@
+{
+    "name": "jslirola/flarum-registration-policy",
+    "description": "Do not sign new members in until they confirm their email address.",
+    "keywords": [
+        "flarum",
+        "registration",
+        "email confirmation",
+        "sso"
+    ],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Javier S. Lirola"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/jslirola/flarum-registration-policy/issues",
+        "source": "https://github.com/jslirola/flarum-registration-policy",
+        "forum": "https://discuss.flarum.org/d/39787"
+    },
+    "require": {
+        "php": "^8.2",
+        "flarum/core": "^2.0.0"
+    },
+    "require-dev": {
+        "flarum/testing": "^2.0.0",
+        "maicol07/flarum-ext-sso": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jslirola\\RegistrationPolicy\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jslirola\\RegistrationPolicy\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Registration Policy",
+            "category": "feature",
+            "optional-dependencies": [
+                "maicol07/flarum-ext-sso",
+                "fof/oauth"
+            ],
+            "icon": {
+                "name": "fas fa-user-lock",
+                "backgroundColor": "#2e3d4f",
+                "color": "#fff"
+            }
+        }
+    },
+    "minimum-stability": "beta",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "@test:integration",
+        "test:integration": "phpunit -c tests/phpunit.integration.xml",
+        "test:setup": "@php tests/integration/setup.php"
+    },
+    "scripts-descriptions": {
+        "test": "Runs all tests.",
+        "test:integration": "Runs all integration tests.",
+        "test:setup": "Sets up a database for use with integration tests. Execute this only once."
+    }
+}
