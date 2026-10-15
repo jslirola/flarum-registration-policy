@@ -43,6 +43,16 @@ class RegisterController implements RequestHandlerInterface
      */
     public const META_KEY = 'jslirolaRegistrationPolicy';
 
+    /**
+     * Session key holding the address a confirmation was just sent to.
+     *
+     * Core's sign-up modal reloads the page after POST /register, and so do
+     * other extensions that wrap its submit (fof/recaptcha). Rather than fight
+     * over that method, the page that loads next reads this once
+     * (PendingConfirmationNotice) and tells the visitor to check their inbox.
+     */
+    public const SESSION_KEY = 'jslirola-registration-policy.pending_email';
+
     public function __construct(
         protected CoreRegisterController $core,
         protected Client $api,
@@ -88,6 +98,10 @@ class RegisterController implements RequestHandlerInterface
             $this->authenticator->logIn($request->getAttribute('session'), $token);
 
             return $this->rememberer->remember($response, $token);
+        }
+
+        if ($user !== null) {
+            $request->getAttribute('session')?->put(self::SESSION_KEY, $user->email);
         }
 
         $body->meta = (object) array_merge(

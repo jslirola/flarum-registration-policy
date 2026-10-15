@@ -9,7 +9,9 @@ jslirola-registration-policy:
       override_sso_activation_help: Esa extensión confirma automáticamente todas las cuentas nuevas. Con esta opción, las cuentas creadas desde el formulario de registro del foro deben confirmar su email; las creadas por el cliente SSO conservan la confirmación automática. No hace nada si esa extensión está desactivada.
 
   forum:
-    sign_up:
-      confirmation_title: Revisa tu email
-      confirmation_text: "Cuenta creada. Te hemos enviado un enlace de confirmación a {email}: ábrelo para entrar."
-      close_button: Cerrar
+    pending_confirmation:
+      title: Revisa tu email
+      text: "Tu cuenta se ha creado, pero todavía no has iniciado sesión. Te hemos enviado un enlace de confirmación a {email}: ábrelo para activar la cuenta y entrar."
+      spam_hint: Si no llega en unos minutos, mira en la carpeta de spam.
+      close_button: Entendido
+      notice: "Confirma tu email para entrar: te hemos enviado un enlace a {email}."

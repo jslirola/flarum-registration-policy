@@ -11,6 +11,7 @@ use Flarum\Extend;
 use Flarum\User\Event\Registered;
 use Jslirola\RegistrationPolicy\Auth\UnconfirmedEmailPasswordChecker;
 use Jslirola\RegistrationPolicy\Console\RevokeUnconfirmedSessionsCommand;
+use Jslirola\RegistrationPolicy\Forum\Content\PendingConfirmationNotice;
 use Jslirola\RegistrationPolicy\Forum\Controller\RegisterController;
 use Jslirola\RegistrationPolicy\Listener\RevertSsoActivation;
 use Jslirola\RegistrationPolicy\RegistrationPolicyServiceProvider;
@@ -18,7 +19,8 @@ use Jslirola\RegistrationPolicy\Setting;
 
 return [
     (new Extend\Frontend('forum'))
-        ->js(__DIR__.'/js/dist/forum.js'),
+        ->js(__DIR__.'/js/dist/forum.js')
+        ->content(PendingConfirmationNotice::class),
 
     (new Extend\Frontend('admin'))
         ->js(__DIR__.'/js/dist/admin.js'),

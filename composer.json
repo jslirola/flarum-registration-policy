@@ -25,7 +25,12 @@
     },
     "require-dev": {
         "flarum/testing": "^2.0.0",
-        "maicol07/flarum-ext-sso": "^2.0"
+        "maicol07/flarum-ext-sso": "^2.0",
+        "fof/oauth": "^2.0",
+        "fof/terms": "^2.0",
+        "fof/recaptcha": "^2.0@beta",
+        "flarum/approval": "^2.0",
+        "fof/disposable-emails": "^2.0@beta"
     },
     "autoload": {
         "psr-4": {

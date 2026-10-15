@@ -15,7 +15,7 @@ Background and design discussion: <https://discuss.flarum.org/d/39787>.
 
 | | Core Flarum | With this extension |
 |---|---|---|
-| Sign up through the forum's form | Signed in at once (5-year token) | No session; the modal says "check your email" |
+| Sign up through the forum's form | Signed in at once (5-year token) | No session; the page that loads next shows a "check your email" dialog and notice with the address |
 | Sign up with a provider-verified email (login provider registration token) | Signed in at once | Signed in at once — unchanged |
 | Click the confirmation link | Signed in | Signed in — unchanged |
 | Log in / `POST /api/token` with an unconfirmed email, right password | Allowed (guest-level permissions) | Refused (401) |
@@ -51,16 +51,24 @@ tokens are left alone.
 
 Requires Flarum 2.0.
 
-| Extension | Status | Notes |
-|---|---|---|
-| none (core only) | Tested | |
-| [maicol07/flarum-ext-sso](https://github.com/maicol07/flarum-ext-sso) | Tested | See below |
-| [fof/oauth](https://github.com/FriendsOfFlarum/oauth) | Covered through core | Its sign-ups use a core registration token; one carrying an email is trusted and signs in as before |
-| fof/disposable-emails, fof/recaptcha, fof/terms | Not affected by design | They validate the API request (`POST /users`), which this extension still makes exactly as core does |
-| flarum/approval | Not affected by design | Works on posts, not on sessions |
+| Extension | What is tested |
+|---|---|
+| none (core only) | Sign-up gets no session |
+| [maicol07/flarum-ext-sso](https://github.com/maicol07/flarum-ext-sso) | Form sign-ups must confirm; API-created accounts keep its activation. See below |
+| [fof/oauth](https://github.com/FriendsOfFlarum/oauth) | A sign-up from a provider-verified email signs in and is linked to the provider |
+| [fof/terms](https://github.com/FriendsOfFlarum/terms) | Not accepting is still rejected; accepting is recorded |
+| [fof/recaptcha](https://github.com/FriendsOfFlarum/recaptcha) | Once configured, a sign-up without a token is still rejected |
+| [fof/disposable-emails](https://github.com/FriendsOfFlarum/disposable-emails) | A disposable address is still rejected |
+| [flarum/approval](https://github.com/flarum/framework/tree/2.x/extensions/approval) | Sign-up unaffected |
 
-"Tested" means the integration suite in this repository enables that extension and asserts the
-behaviour. "Not affected by design" means the reasoning above, not a test — reports welcome.
+`tests/integration/CompatibilityMatrixTest.php` runs the same sign-up with each of them enabled
+alone, with all of them at once and with none, and checks every time that the account is created
+unconfirmed, holds no token, gets the confirmation email and that the next page shows the notice
+once. Accepting a reCAPTCHA token is not tested: that would mean calling Google.
+
+The "check your email" dialog does not touch the sign-up modal: core reloads the page after a
+successful sign-up and other extensions (fof/recaptcha) wrap its submit, so the server hands the
+address to the next page load instead (session, read once).
 
 ### maicol07/flarum-ext-sso
 
