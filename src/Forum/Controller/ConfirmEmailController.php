@@ -14,12 +14,10 @@ use Flarum\Http\RememberAccessToken;
 use Flarum\Http\Rememberer;
 use Flarum\Http\SessionAuthenticator;
 use Flarum\Http\UrlGenerator;
-use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\Command\ConfirmEmail;
 use Flarum\User\EmailToken;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Support\Arr;
-use Jslirola\RegistrationPolicy\Setting;
 use Laminas\Diactoros\Response\RedirectResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -45,8 +43,7 @@ class ConfirmEmailController implements RequestHandlerInterface
         protected Dispatcher $bus,
         protected UrlGenerator $url,
         protected SessionAuthenticator $authenticator,
-        protected Rememberer $rememberer,
-        protected SettingsRepositoryInterface $settings
+        protected Rememberer $rememberer
     ) {
     }
 
@@ -54,7 +51,7 @@ class ConfirmEmailController implements RequestHandlerInterface
     {
         $token = (string) Arr::get($request->getQueryParams(), 'token');
 
-        if (! Setting::enabled($this->settings->get(Setting::SKIP_LOGIN_UNCONFIRMED)) || ! $this->activatesAnAccount($token)) {
+        if (! $this->activatesAnAccount($token)) {
             return $this->core->handle($request);
         }
 

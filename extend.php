@@ -41,7 +41,6 @@ return [
         ->addPasswordChecker('jslirola-registration-policy', UnconfirmedEmailPasswordChecker::class),
 
     (new Extend\Settings())
-        ->default(Setting::SKIP_LOGIN_UNCONFIRMED, true)
         ->default(Setting::BLOCK_TOKEN_UNCONFIRMED, true)
         ->default(Setting::OVERRIDE_SSO_ACTIVATION, true),
 

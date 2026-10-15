@@ -1,8 +1,6 @@
 jslirola-registration-policy:
   admin:
     settings:
-      skip_login_unconfirmed_label: No iniciar sesión hasta que se confirme el email
-      skip_login_unconfirmed_help: Flarum inicia sesión a todo usuario nada más registrarse. Con esta opción, la sesión se inicia al pulsar el enlace del email de confirmación.
       block_token_unconfirmed_label: Rechazar el acceso mientras el email no esté confirmado
       block_token_unconfirmed_help: Se rechaza la contraseña correcta (formulario de acceso, POST /api/token, clientes SSO) hasta que la cuenta confirme su email. Una contraseña incorrecta recibe la respuesta de siempre.
       override_sso_activation_label: Exigir confirmación también con maicol07/flarum-ext-sso

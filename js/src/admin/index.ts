@@ -4,20 +4,12 @@ import isExtensionEnabled from 'flarum/admin/utils/isExtensionEnabled';
 const t = (key: string) => app.translator.trans(`jslirola-registration-policy.admin.settings.${key}`);
 
 app.initializers.add('jslirola-registration-policy', () => {
-  const registry = app.registry
-    .for('jslirola-registration-policy')
-    .registerSetting({
-      setting: 'jslirola-registration-policy.skip_login_unconfirmed',
-      type: 'boolean',
-      label: t('skip_login_unconfirmed_label'),
-      help: t('skip_login_unconfirmed_help'),
-    })
-    .registerSetting({
-      setting: 'jslirola-registration-policy.block_token_unconfirmed',
-      type: 'boolean',
-      label: t('block_token_unconfirmed_label'),
-      help: t('block_token_unconfirmed_help'),
-    });
+  const registry = app.registry.for('jslirola-registration-policy').registerSetting({
+    setting: 'jslirola-registration-policy.block_token_unconfirmed',
+    type: 'boolean',
+    label: t('block_token_unconfirmed_label'),
+    help: t('block_token_unconfirmed_help'),
+  });
 
   // Only meaningful next to maicol07/flarum-ext-sso: the listener it controls is
   // not even registered without it (see extend.php), so do not offer the switch.

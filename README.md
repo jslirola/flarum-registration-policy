@@ -4,7 +4,19 @@
 
 A [Flarum](https://flarum.org) extension. New members sign in only after they confirm their email address.
 
-Out of the box, Flarum signs people in the moment they submit the sign-up form, with a "remember me" token that lasts five years — whether or not the address is real. With this extension the sign-up creates the account and sends the confirmation email, and the session starts when the member clicks the link. Until then, the next page tells them to check their inbox.
+Out of the box, Flarum signs people in the moment they submit the sign-up form, with a "remember me" token that lasts five years — whether or not the address is real. With this extension the sign-up creates the account and sends the confirmation email, and the next page tells the member to check their inbox. Clicking the link signs them in and keeps them signed in.
+
+Members who sign up with a login provider that verified their address (for example through [fof/oauth](https://github.com/FriendsOfFlarum/oauth)) still sign in straight away.
+
+Right after signing up, the member sees where to look:
+
+![Check your email dialog](https://raw.githubusercontent.com/jslirola/flarum-registration-policy/main/docs/sign-up-modal.png)
+
+![Notice at the top of the forum](https://raw.githubusercontent.com/jslirola/flarum-registration-policy/main/docs/sign-up-notice.png)
+
+The link in the email opens Flarum's own confirmation page, and that button is what signs them in:
+
+![Confirm email page](https://raw.githubusercontent.com/jslirola/flarum-registration-policy/main/docs/confirm-email.png)
 
 It pairs well with [fof/disposable-emails](https://github.com/FriendsOfFlarum/disposable-emails): that one stops throwaway addresses at the door, this one makes sure an address that slips through cannot do anything until it is proven real.
 
@@ -24,9 +36,10 @@ php flarum cache:clear
 
 ## Configuration
 
-Configure the extension in the admin panel under Extensions → Registration Policy. Every option is on by default:
+Nothing to set up: once enabled, new members sign in when they confirm their email. Two options under Extensions → Registration Policy, both on by default:
 
-- **Do not sign new members in until they confirm their email**: no session at sign-up. Clicking the confirmation link signs the member in and keeps them signed in, like "remember me". Members who sign up with a login provider that verified their address (for example through [fof/oauth](https://github.com/FriendsOfFlarum/oauth)) still sign in straight away.
+![Settings](https://raw.githubusercontent.com/jslirola/flarum-registration-policy/main/docs/settings.png)
+
 - **Refuse sign-in while the email is unconfirmed**: the log in form and `POST /api/token` refuse the right password until the address is confirmed. A wrong password gets the usual answer, so nobody learns which accounts exist.
 - **Require confirmation even with maicol07/flarum-ext-sso**: only shown when that extension is enabled. See [SSO](#single-sign-on) below.
 

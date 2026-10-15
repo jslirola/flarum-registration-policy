@@ -14,9 +14,6 @@ namespace Jslirola\RegistrationPolicy;
  */
 final class Setting
 {
-    /** Do not sign a registrant in until their email address is confirmed. */
-    public const SKIP_LOGIN_UNCONFIRMED = 'jslirola-registration-policy.skip_login_unconfirmed';
-
     /** Refuse a correct password while the account's email address is unconfirmed. */
     public const BLOCK_TOKEN_UNCONFIRMED = 'jslirola-registration-policy.block_token_unconfirmed';
 

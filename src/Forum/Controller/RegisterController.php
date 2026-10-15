@@ -10,15 +10,12 @@
 namespace Jslirola\RegistrationPolicy\Forum\Controller;
 
 use Flarum\Api\Client;
-use Flarum\Forum\Controller\RegisterController as CoreRegisterController;
 use Flarum\Http\RememberAccessToken;
 use Flarum\Http\Rememberer;
 use Flarum\Http\SessionAuthenticator;
-use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\RegistrationToken;
 use Flarum\User\User;
 use Jslirola\RegistrationPolicy\RegistrationContext;
-use Jslirola\RegistrationPolicy\Setting;
 use Laminas\Diactoros\StreamFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -33,7 +30,11 @@ use Psr\Http\Server\RequestHandlerInterface;
  * fof/recaptcha, fof/disposable-emails and friends all still run) and signs the
  * member in only when the account is already confirmed — a provider-verified
  * address, typically. Everyone else signs in when they click the link in the
- * confirmation email, which core's ConfirmEmailController already does.
+ * confirmation email (ConfirmEmailController).
+ *
+ * There is no switch for this: it is what the extension is for, and turning it
+ * off while keeping the rest would sign people in at sign-up only to refuse
+ * them at their next log in. Disabling the extension restores core's behaviour.
  */
 class RegisterController implements RequestHandlerInterface
 {
@@ -54,11 +55,9 @@ class RegisterController implements RequestHandlerInterface
     public const SESSION_KEY = 'jslirola-registration-policy.pending_email';
 
     public function __construct(
-        protected CoreRegisterController $core,
         protected Client $api,
         protected SessionAuthenticator $authenticator,
         protected Rememberer $rememberer,
-        protected SettingsRepositoryInterface $settings,
         protected RegistrationContext $context
     ) {
     }
@@ -70,10 +69,6 @@ class RegisterController implements RequestHandlerInterface
         $this->context->begin($this->emailVerifiedByProvider($attributes));
 
         try {
-            if (! Setting::enabled($this->settings->get(Setting::SKIP_LOGIN_UNCONFIRMED))) {
-                return $this->core->handle($request);
-            }
-
             $params = ['data' => ['type' => 'users', 'attributes' => $attributes]];
 
             $response = $this->api->withParentRequest($request)->withBody($params)->post('/users');
