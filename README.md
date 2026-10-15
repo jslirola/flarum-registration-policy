@@ -49,7 +49,8 @@ tokens are left alone.
 
 ## Compatibility
 
-Requires Flarum 2.0.
+Requires Flarum 2.0 (PHP 8.3+). CI runs the suite on PHP 8.3 and 8.4 against SQLite, MySQL 8.0 and
+PostgreSQL 16, and fails on any warning or deprecation raised by this extension's code.
 
 | Extension | What is tested |
 |---|---|
@@ -93,7 +94,7 @@ enabled:
 
 ```sh
 composer install
-composer test:setup   # once; SQLite by default, DB_DRIVER=mysql + DB_* for MySQL
+composer test:setup   # once; SQLite by default, DB_DRIVER=mysql or pgsql + DB_* for the others
 composer test
 
 cd js && npm install && npm run build

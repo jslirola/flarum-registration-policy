@@ -8,13 +8,24 @@ on:
 jobs:
   backend:
     name: PHP ${{ matrix.php }} · ${{ matrix.db }}
-    runs-on: ubuntu-latest
+    # Pinned rather than ubuntu-latest, so the runner image changes when we say so.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
+        # Flarum 2.0 requires PHP 8.3.
         php: ['8.3', '8.4']
-        db: [sqlite, mysql]
+        db: [sqlite, mysql, pgsql]
+        include:
+          - db: sqlite
+            port: ''
+          - db: mysql
+            port: 3306
+          - db: pgsql
+            port: 5432
 
+    # Both servers start in every job (a service cannot be conditional); each
+    # job connects only to the one its DB_DRIVER names.
     services:
       mysql:
         image: mysql:8.0
@@ -24,22 +35,32 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: flarum_test
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready -U root" --health-interval=10s --health-timeout=5s --health-retries=5
 
     env:
       DB_DRIVER: ${{ matrix.db }}
       DB_HOST: 127.0.0.1
-      DB_PORT: 3306
+      DB_PORT: ${{ matrix.port }}
       DB_DATABASE: flarum_test
+      DB_SCHEMA: public
       DB_USERNAME: root
       DB_PASSWORD: root
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: gd, pdo_mysql, pdo_sqlite, mbstring, intl
+          extensions: gd, pdo_mysql, pdo_pgsql, pdo_sqlite, mbstring, intl
           coverage: none
 
       - run: composer install --no-interaction --no-progress
@@ -50,14 +71,14 @@ jobs:
 
   frontend:
     name: JS build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: js
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
 
