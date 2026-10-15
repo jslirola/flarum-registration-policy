@@ -12,6 +12,7 @@ use Flarum\User\Event\Registered;
 use Jslirola\RegistrationPolicy\Auth\UnconfirmedEmailPasswordChecker;
 use Jslirola\RegistrationPolicy\Console\RevokeUnconfirmedSessionsCommand;
 use Jslirola\RegistrationPolicy\Forum\Content\PendingConfirmationNotice;
+use Jslirola\RegistrationPolicy\Forum\Controller\ConfirmEmailController;
 use Jslirola\RegistrationPolicy\Forum\Controller\RegisterController;
 use Jslirola\RegistrationPolicy\Listener\RevertSsoActivation;
 use Jslirola\RegistrationPolicy\RegistrationPolicyServiceProvider;
@@ -32,7 +33,9 @@ return [
 
     (new Extend\Routes('forum'))
         ->remove('register')
-        ->post('/register', 'register', RegisterController::class),
+        ->post('/register', 'register', RegisterController::class)
+        ->remove('confirmEmail.submit')
+        ->post('/confirm/{token}', 'confirmEmail.submit', ConfirmEmailController::class),
 
     (new Extend\Auth())
         ->addPasswordChecker('jslirola-registration-policy', UnconfirmedEmailPasswordChecker::class),

@@ -26,7 +26,7 @@ php flarum cache:clear
 
 Configure the extension in the admin panel under Extensions → Registration Policy. Every option is on by default:
 
-- **Do not sign new members in until they confirm their email**: no session at sign-up. Members who sign up with a login provider that verified their address (for example through [fof/oauth](https://github.com/FriendsOfFlarum/oauth)) still sign in straight away.
+- **Do not sign new members in until they confirm their email**: no session at sign-up. Clicking the confirmation link signs the member in and keeps them signed in, like "remember me". Members who sign up with a login provider that verified their address (for example through [fof/oauth](https://github.com/FriendsOfFlarum/oauth)) still sign in straight away.
 - **Refuse sign-in while the email is unconfirmed**: the log in form and `POST /api/token` refuse the right password until the address is confirmed. A wrong password gets the usual answer, so nobody learns which accounts exist.
 - **Require confirmation even with maicol07/flarum-ext-sso**: see [SSO](#single-sign-on) below.
 
@@ -92,4 +92,4 @@ cd js && npm install && npm run build
 - [GitHub](https://github.com/jslirola/flarum-registration-policy)
 - [Discussion on discuss.flarum.org](https://discuss.flarum.org/d/39787)
 
-An extension by [Javier S. Lirola](https://github.com/jslirola), built for [FP Informática](https://www.fp-informatica.es).
+An extension by [Javier S. Lirola](https://github.com/jslirola).

@@ -113,7 +113,51 @@ class RegisterTest extends TestCase
 
         $this->assertEquals(302, $response->getStatusCode());
         $this->assertTrue((bool) $user->fresh()->is_email_confirmed);
-        $this->assertSame(1, $this->tokensOf($user->id));
+
+        // The remember token core would have handed out at sign-up, with its cookie,
+        // so the member stays signed in and a site sharing the cookie sees them.
+        $this->assertSame(1, $this->tokensOf($user->id, 'session_remember'));
+        $this->assertTrue($this->setsRememberCookie($response));
+    }
+
+    #[Test]
+    public function confirming_with_the_setting_off_behaves_like_core(): void
+    {
+        $this->setting(Setting::SKIP_LOGIN_UNCONFIRMED, false);
+
+        $this->prepareDatabase([
+            User::class => [['id' => 3, 'username' => 'pending', 'email' => 'pending@machine.local', 'is_email_confirmed' => 0]],
+            'email_tokens' => [['token' => 'activation-token', 'email' => 'pending@machine.local', 'user_id' => 3, 'created_at' => Carbon::now()]],
+        ]);
+
+        $response = $this->confirm('activation-token');
+
+        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertSame(1, $this->tokensOf(3, 'session'));
+        $this->assertFalse($this->setsRememberCookie($response));
+    }
+
+    #[Test]
+    public function an_email_change_of_an_active_account_is_left_to_core(): void
+    {
+        $this->prepareDatabase([
+            User::class => [['id' => 3, 'username' => 'active', 'email' => 'old@machine.local', 'is_email_confirmed' => 1]],
+            'email_tokens' => [['token' => 'change-token', 'email' => 'new@machine.local', 'user_id' => 3, 'created_at' => Carbon::now()]],
+        ]);
+
+        $response = $this->confirm('change-token');
+
+        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertSame('new@machine.local', User::query()->find(3)->email);
+        $this->assertSame(1, $this->tokensOf(3, 'session'));
+        $this->assertSame(0, $this->tokensOf(3, 'session_remember'));
+    }
+
+    private function confirm(string $token): ResponseInterface
+    {
+        return $this->send(
+            $this->request('POST', '/confirm/'.$token)->withAttribute('bypassCsrfToken', true)
+        );
     }
 
     private function register(array $attributes): ResponseInterface
@@ -126,9 +170,12 @@ class RegisterTest extends TestCase
         );
     }
 
-    private function tokensOf(int $userId): int
+    private function tokensOf(int $userId, ?string $type = null): int
     {
-        return $this->database()->table('access_tokens')->where('user_id', $userId)->count();
+        return $this->database()->table('access_tokens')
+            ->where('user_id', $userId)
+            ->when($type !== null, fn ($query) => $query->where('type', $type))
+            ->count();
     }
 
     private function setsRememberCookie(ResponseInterface $response): bool
