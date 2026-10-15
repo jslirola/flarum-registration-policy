@@ -20,7 +20,7 @@
         "forum": "https://discuss.flarum.org/d/39787"
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "flarum/core": "^2.0.0"
     },
     "require-dev": {
@@ -38,6 +38,9 @@
         }
     },
     "extra": {
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        },
         "flarum-extension": {
             "title": "Registration Policy",
             "category": "feature",
