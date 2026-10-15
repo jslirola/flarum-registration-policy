@@ -1,107 +1,95 @@
-# Registration Policy for Flarum
+# Registration Policy
 
-Do not sign new members in until they confirm their email address.
+![License](https://img.shields.io/badge/license-MIT-blue.svg) [![CI](https://github.com/jslirola/flarum-registration-policy/actions/workflows/ci.yml/badge.svg)](https://github.com/jslirola/flarum-registration-policy/actions/workflows/ci.yml)
 
-Flarum signs every registrant in the moment the sign-up form is submitted — with a five-year
-"remember me" token — whether or not the email address has been confirmed. On a forum that is
-the community layer of another site (SSO, a shared cookie), that means an address nobody ever
-confirmed, often a disposable one, gets a session everywhere. This extension moves the sign-in to
-where it belongs: the moment the member clicks the link in the confirmation email, which Flarum
-already handles.
+A [Flarum](https://flarum.org) extension. New members sign in only after they confirm their email address.
 
-Background and design discussion: <https://discuss.flarum.org/d/39787>.
+Out of the box, Flarum signs people in the moment they submit the sign-up form, with a "remember me" token that lasts five years — whether or not the address is real. With this extension the sign-up creates the account and sends the confirmation email, and the session starts when the member clicks the link. Until then, the next page tells them to check their inbox.
 
-## What it does
+It pairs well with [fof/disposable-emails](https://github.com/FriendsOfFlarum/disposable-emails): that one stops throwaway addresses at the door, this one makes sure an address that slips through cannot do anything until it is proven real.
 
-| | Core Flarum | With this extension |
-|---|---|---|
-| Sign up through the forum's form | Signed in at once (5-year token) | No session; the page that loads next shows a "check your email" dialog and notice with the address |
-| Sign up with a provider-verified email (login provider registration token) | Signed in at once | Signed in at once — unchanged |
-| Click the confirmation link | Signed in | Signed in — unchanged |
-| Log in / `POST /api/token` with an unconfirmed email, right password | Allowed (guest-level permissions) | Refused (401) |
-| Same, wrong password | Refused | Refused — same answer, so nothing leaks |
-
-Each behaviour has its own setting in the admin panel, all on by default.
-
-It does **not** reject disposable addresses itself: use
-[fof/disposable-emails](https://github.com/FriendsOfFlarum/disposable-emails) for that. The two are
-complementary — that one stops the address at the door, this one makes sure an address that got
-through cannot do anything until it is proven real.
-
-## Installation
+### Installation
 
 ```sh
-composer require jslirola/flarum-registration-policy
+composer require jslirola/flarum-registration-policy:"*"
 php flarum extension:enable jslirola-registration-policy
+```
+
+### Updating
+
+```sh
+composer update jslirola/flarum-registration-policy
 php flarum cache:clear
 ```
 
-Accounts that registered **before** you installed it still hold the session core gave them.
-End those once (dry run first):
+## Configuration
+
+Configure the extension in the admin panel under Extensions → Registration Policy. Every option is on by default:
+
+- **Do not sign new members in until they confirm their email**: no session at sign-up. Members who sign up with a login provider that verified their address (for example through [fof/oauth](https://github.com/FriendsOfFlarum/oauth)) still sign in straight away.
+- **Refuse sign-in while the email is unconfirmed**: the log in form and `POST /api/token` refuse the right password until the address is confirmed. A wrong password gets the usual answer, so nobody learns which accounts exist.
+- **Require confirmation even with maicol07/flarum-ext-sso**: see [SSO](#single-sign-on) below.
+
+### Members who signed up before
+
+Accounts created before you installed the extension may still hold the session Flarum gave them. Count them, then end those sessions:
 
 ```sh
 php flarum registration-policy:revoke-unconfirmed
 php flarum registration-policy:revoke-unconfirmed --execute
 ```
 
-Only `session` and `session_remember` tokens of unconfirmed accounts are deleted; developer API
-tokens are left alone.
+Only sign-in sessions of unconfirmed accounts are removed. Developer API tokens are left alone.
 
-## Compatibility
+### Single sign-on
 
-Requires Flarum 2.0 (PHP 8.3+). CI runs the suite on PHP 8.3 and 8.4 against SQLite, MySQL 8.0 and
-PostgreSQL 16, and fails on any warning or deprecation raised by this extension's code.
+[maicol07/flarum-ext-sso](https://github.com/maicol07/flarum-ext-sso) confirms every new account automatically. That is right for accounts its SSO client creates, but it also applies to the forum's own sign-up form. With that extension enabled, accounts created through the forum's form must still confirm their email, and accounts created by your SSO client keep their automatic confirmation.
 
-| Extension | What is tested |
-|---|---|
-| none (core only) | Sign-up gets no session |
-| [maicol07/flarum-ext-sso](https://github.com/maicol07/flarum-ext-sso) | Form sign-ups must confirm; API-created accounts keep its activation. See below |
-| [fof/oauth](https://github.com/FriendsOfFlarum/oauth) | A sign-up from a provider-verified email signs in and is linked to the provider |
-| [fof/terms](https://github.com/FriendsOfFlarum/terms) | Not accepting is still rejected; accepting is recorded |
-| [fof/recaptcha](https://github.com/FriendsOfFlarum/recaptcha) | Once configured, a sign-up without a token is still rejected |
-| [fof/disposable-emails](https://github.com/FriendsOfFlarum/disposable-emails) | A disposable address is still rejected |
-| [flarum/approval](https://github.com/flarum/framework/tree/2.x/extensions/approval) | Sign-up unaffected |
+If your site signs members in through `POST /api/token` and wants to tell "wrong password" from "email not confirmed", check `users.is_email_confirmed` after a refusal and verify the password against the stored hash.
 
-`tests/integration/CompatibilityMatrixTest.php` runs the same sign-up with each of them enabled
-alone, with all of them at once and with none, and checks every time that the account is created
-unconfirmed, holds no token, gets the confirmation email and that the next page shows the notice
-once. Accepting a reCAPTCHA token is not tested: that would mean calling Google.
+### Compatibility
 
-The "check your email" dialog does not touch the sign-up modal: core reloads the page after a
-successful sign-up and other extensions (fof/recaptcha) wrap its submit, so the server hands the
-address to the next page load instead (session, read once).
+Requires Flarum 2.0. Tested on PHP 8.3 and 8.4 with SQLite, MySQL and PostgreSQL, alone and together with:
 
-### maicol07/flarum-ext-sso
+- [maicol07/flarum-ext-sso](https://github.com/maicol07/flarum-ext-sso)
+- [fof/oauth](https://github.com/FriendsOfFlarum/oauth)
+- [fof/terms](https://github.com/FriendsOfFlarum/terms)
+- [fof/recaptcha](https://github.com/FriendsOfFlarum/recaptcha)
+- [fof/disposable-emails](https://github.com/FriendsOfFlarum/disposable-emails)
+- [flarum/approval](https://github.com/flarum/framework/tree/2.x/extensions/approval)
 
-That extension confirms **every** account as it is created (`ActivateUser` on `Registered`). That
-is right for accounts its SSO client creates — your identity provider vouched for the address — but
-it also applies to the forum's own sign-up form, where nobody vouched for anything. So, when it is
-enabled:
+### Customizing Translations
 
-- Accounts created through the forum's sign-up form go back to unconfirmed and must confirm their
-  email like anywhere else (setting *Require confirmation even with maicol07/flarum-ext-sso*).
-- Accounts created by its PHP client (`POST /api/users` with a master key) or its JWT endpoint keep
-  their automatic confirmation.
-- Its client sign-in (`POST /api/token`) is refused for unconfirmed accounts while the password
-  checker setting is on. If your site needs to tell "wrong password" from "unconfirmed email", check
-  `users.is_email_confirmed` after a refusal and verify the password against the hash yourself.
-- In provider mode, client sites are signed in when the member confirms their email — the moment
-  Flarum itself signs them in.
-- If its sign-up button points to your own site, the forum's sign-up form is never used and only
-  the password checker matters.
+The extension ships with English and Spanish. These are the keys shown to members:
 
-## Development
+```yaml
+jslirola-registration-policy:
+  forum:
+    pending_confirmation:
+      title: Check your email
+      text: "Your account has been created, but you are not signed in yet. We have sent a confirmation link to {email}: open it to activate your account and sign in."
+      spam_hint: If it does not arrive within a few minutes, check your spam folder.
+      close_button: Got it
+      notice: "Confirm your email address to sign in: we have sent a link to {email}."
+```
+
+Edit them from the admin panel with [FoF Linguist](https://github.com/FriendsOfFlarum/linguist), or send them to your language pack.
+
+### Development
 
 ```sh
 composer install
-composer test:setup   # once; SQLite by default, DB_DRIVER=mysql or pgsql + DB_* for the others
+composer test:setup   # once; SQLite by default, DB_DRIVER=mysql or pgsql plus DB_* for the others
 composer test
 
 cd js && npm install && npm run build
 ```
 
-`js/dist` is committed, as Flarum loads it straight from the package; CI fails if it is stale.
+`js/dist` is committed, as Flarum loads it straight from the package.
 
-## License
+### Links
 
-MIT
+- [GitHub](https://github.com/jslirola/flarum-registration-policy)
+- [Discussion on discuss.flarum.org](https://discuss.flarum.org/d/39787)
+
+An extension by [Javier S. Lirola](https://github.com/jslirola), built for [FP Informática](https://www.fp-informatica.es).

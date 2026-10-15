@@ -1,7 +1,7 @@
 import app from 'flarum/forum/app';
 import { extend } from 'flarum/common/extend';
 import Alert from 'flarum/common/components/Alert';
-import ForumApplication from 'flarum/forum/ForumApplication';
+import Page from 'flarum/common/components/Page';
 import Notices from 'flarum/forum/components/Notices';
 import PendingConfirmationModal from './components/PendingConfirmationModal';
 
@@ -24,8 +24,17 @@ function pendingEmail(): string | null {
   return typeof email === 'string' && email !== '' ? email : null;
 }
 
+let modalShown = false;
+
 app.initializers.add('jslirola-registration-policy', () => {
-  extend(ForumApplication.prototype, 'mount', function () {
+  // Not on mount: every Page closes the open modal in its oninit, and the first
+  // page is created right after mount — the dialog would vanish before it was
+  // drawn, and anything waiting for an empty modal slot (an ad-blocker notice,
+  // say) would take its place. Once the first page exists, nothing closes it.
+  extend(Page.prototype, 'oncreate', function () {
+    if (modalShown) return;
+    modalShown = true;
+
     const email = pendingEmail();
 
     if (email) app.modal.show(PendingConfirmationModal, { email });
